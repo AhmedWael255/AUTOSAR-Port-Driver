@@ -181,6 +181,12 @@ typedef struct
    
    /*DET code to report Unchangable Mode*/
 #define PORT_E_MODE_UNCHANGEABLE        (uint8)0x20
+   
+   /*DET code to report Unchangable Direction*/
+#define PORT_E_DIRECTION_UNCHANGEABLE   (uint8)0x23
+   
+   /*DET code to report Invalid Pin*/
+#define PORT_E_PARAM_PIN                (uint8)0x25       
 
 /*
  * API service used without module initialization is reported using following

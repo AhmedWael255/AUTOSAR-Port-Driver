@@ -33,9 +33,7 @@
 #define PORT_VERSION_INFO_API                           (STD_OFF)
 
 /* Pre-compile option for Pin Direction Info API */
-#define Port_SET_PIN_DIRECTION_API                      (STD_ON)
-
-#define PORT_PIN_MODE_CHANGEABLE                        (FALSE)
+#define Port_SET_PIN_DIRECTION_API                      (STD_ON)  
 
 /*NUmber of Pins in the MCU*/
 #define PORT_CONFIGURED_PINS                            (43U)

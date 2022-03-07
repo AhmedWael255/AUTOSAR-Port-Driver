@@ -52,8 +52,11 @@ void Port_Init( const Port_ConfigType* ConfigPtr )
                                 PORT_E_PARAM_CONFIG);
 	}
 	else
-#endif
         {
+          /* Do Nothing */
+        }
+#endif
+        
           Port_Status = PORT_INITIALIZED;
           Port_PinConfigPtr = ConfigPtr;
             
@@ -90,7 +93,7 @@ void Port_Init( const Port_ConfigType* ConfigPtr )
           else if( (Port_PinConfigPtr->Pin[idx].Port_Num == 2) && (Port_PinConfigPtr->Pin[idx].Pin_Num <= 3) ) /* PC0 to PC3 */
           {
               /* Do Nothing ...  this is the JTAG pins */
-              return;
+              continue;
           }
           else
           {
@@ -98,7 +101,7 @@ void Port_Init( const Port_ConfigType* ConfigPtr )
           }
           
            
-           
+           /*Configure the Mode of the Pin*/
               switch(Port_PinConfigPtr->Pin[idx].Pin_Mode)
               {
               case PORT_PIN_MODE_ADC:
@@ -132,47 +135,47 @@ void Port_Init( const Port_ConfigType* ConfigPtr )
                     CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_ALT_FUNC_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);             /* Disable Alternative function for this pin by clear the corresponding bit in GPIOAFSEL register */
                     *(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_CTL_REG_OFFSET) &= ~(0x0000000F << (Port_PinConfigPtr->Pin[idx].Pin_Num * 4));     /* Clear the PMCx bits for this pin */
                     
-                    if(Port_PinConfigPtr->Pin[idx].Direction == PORT_PIN_OUT)
+                break;
+                
+                if(Port_PinConfigPtr->Pin[idx].Direction == PORT_PIN_OUT)
+                {
+                  SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DIR_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);                /* Set the corresponding bit in the GPIODIR register to configure it as output pin */
+                   
+                  if(Port_PinConfigPtr->Pin[idx].Init_Value == STD_HIGH)
+                  {
+                      SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DATA_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);          /* Set the corresponding bit in the GPIODATA register to provide initial value 1 */
+                  }
+                  else
+                  {
+                      CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DATA_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);        /* Clear the corresponding bit in the GPIODATA register to provide initial value 0 */
+                  }
+                 }
+                else if(Port_PinConfigPtr->Pin[idx].Direction == PORT_PIN_IN)
+                {
+                    CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DIR_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);             /* Clear the corresponding bit in the GPIODIR register to configure it as input pin */
+                     
+                    if(Port_PinConfigPtr->Pin[idx].Pull_Resistor == PORT_PIN_PUN)
                     {
-                      SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DIR_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);                /* Set the corresponding bit in the GPIODIR register to configure it as output pin */
-                      
-                      if(Port_PinConfigPtr->Pin[idx].Init_Value == STD_HIGH)
-                      {
-                          SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DATA_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);          /* Set the corresponding bit in the GPIODATA register to provide initial value 1 */
-                      }
-                      else
-                      {
-                          CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DATA_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);        /* Clear the corresponding bit in the GPIODATA register to provide initial value 0 */
-                      }
-                     }
-                    else if(Port_PinConfigPtr->Pin[idx].Direction == PORT_PIN_IN)
+                        SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_UP_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);       /* Set the corresponding bit in the GPIOPUR register to enable the internal pull up pin */
+                    }
+                    else if(Port_PinConfigPtr->Pin[idx].Pull_Resistor == PORT_PIN_PDN)
                     {
-                        CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DIR_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);             /* Clear the corresponding bit in the GPIODIR register to configure it as input pin */
-                        
-                        if(Port_PinConfigPtr->Pin[idx].Pull_Resistor == PORT_PIN_PUN)
-                        {
-                            SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_UP_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);       /* Set the corresponding bit in the GPIOPUR register to enable the internal pull up pin */
-                        }
-                        else if(Port_PinConfigPtr->Pin[idx].Pull_Resistor == PORT_PIN_PDN)
-                        {
-                            SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_DOWN_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);     /* Set the corresponding bit in the GPIOPDR register to enable the internal pull down pin */
-                        }
-                        else
-                        {
-                            CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_UP_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);     /* Clear the corresponding bit in the GPIOPUR register to disable the internal pull up pin */
-                            CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_DOWN_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);   /* Clear the corresponding bit in the GPIOPDR register to disable the internal pull down pin */
-                        }
+                       SET_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_DOWN_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);     /* Set the corresponding bit in the GPIOPDR register to enable the internal pull down pin */
                     }
                     else
                     {
-                        /* Do Nothing */
+                        CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_UP_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);     /* Clear the corresponding bit in the GPIOPUR register to disable the internal pull up pin */
+                        CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_PULL_DOWN_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);   /* Clear the corresponding bit in the GPIOPDR register to disable the internal pull down pin */
                     }
-                break;
+                }
+                else
+                {
+                    /* Do Nothing */
+                }
+                
               }
           }
-           
 
-        }
 }
 
 
@@ -200,18 +203,47 @@ void Port_SetPinDirection( Port_PinType Pin, Port_PinDirectionType Direction )
                             Port_SetPinDirection_SID,
                             PORT_E_UNINIT);
 	}
-	else if(Pin >= PORT_CONFIGURED_PINS || Pin < PIN_MIN_NUMBER)
+        
+	else
+        {
+          /* Do Nothing..... */
+        }
+        
+        /* check if the the Pin is Valid */
+        if(Pin >= PORT_CONFIGURED_PINS || Pin < PIN_MIN_NUMBER)
         {
             Det_ReportError(PORT_MODULE_ID,
                             PORT_INSTANCE_ID,
                             Port_SetPinDirection_SID,
                             PORT_E_PARAM_INVALID_PIN_ID);
         }
+        
         else
-#endif
         {
+          /* Do Nothing */
+        }
+        
+        /* check if the Pin Direction is Unchangeable or not */
+        if(Port_PinConfigPtr->Pin[Pin].Pin_Change_Direction == No_Change)
+        {
+          Det_ReportError(PORT_MODULE_ID,
+                          PORT_INSTANCE_ID,
+                          Port_SetPinDirection_SID,
+                          PORT_E_DIRECTION_UNCHANGEABLE);
+          return;
+        }
+        
+        else
+        {
+          /* Do Nothing */
+        }
+
+#endif
+        
           volatile uint32 * PortGpio_Ptr = NULL_PTR; /* point to the required Port Registers base address */
-                  
+       
+
+         
           switch(Port_PinConfigPtr->Pin[Pin].Port_Num)
           {
                case  0: PortGpio_Ptr = (volatile uint32 *)GPIO_PORTA_BASE_ADDRESS; /* PORTA Base Address */
@@ -270,9 +302,12 @@ void Port_RefreshPortDirection( void )
                         PORT_E_UNINIT);
       }
       else
+      {
+        /* Do Nothing */
+      }
         
 #endif
-      {
+      
         for(Port_PinType idx = PIN_MIN_NUMBER; idx < PORT_CONFIGURED_PINS; idx++)
           {
             volatile uint32 * PortGpio_Ptr = NULL_PTR; /* point to the required Port Registers base address */
@@ -293,8 +328,6 @@ void Port_RefreshPortDirection( void )
                         break;
            }
            
-           if(Port_PinConfigPtr->Pin[idx].Pin_Mode == PORT_PIN_MODE_GPIO)
-           {
              if(Port_PinConfigPtr->Pin[idx].Pin_Change_Direction == Change)
              {
                /*Do Nothing*/
@@ -310,10 +343,9 @@ void Port_RefreshPortDirection( void )
                    CLEAR_BIT(*(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_DIR_REG_OFFSET) , Port_PinConfigPtr->Pin[idx].Pin_Num);             /* Clear the corresponding bit in the GPIODIR register to configure it as input pin */    
                 }
              }
-           }
            
           }
-      }
+      
         
 }
 
@@ -341,8 +373,11 @@ void Port_GetVersionInfo( Std_VersionInfoType* versioninfo )
                                 PORT_E_PARAM_POINTER);
 	}
 	else
-#endif
         {
+          /* Do Nothing */
+        }
+#endif
+        
   	/* Copy the vendor Id */
 	versioninfo->vendorID = (uint16)PORT_VENDOR_ID;
 	/* Copy the module Id */
@@ -381,17 +416,44 @@ void Port_SetPinMode( Port_PinType Pin, Port_PinModeType Mode )
                         Port_RefreshPortDirection_SID,
                         PORT_E_UNINIT);
       }
-      else if (PORT_PIN_MODE_CHANGEABLE == FALSE)
+      
+      else
+      {
+        /* Do Nothing */
+      }
+      
+      
+        /* check if the Pin Number is invalid */
+      if (Pin < PIN_MIN_NUMBER || Pin > PORT_CONFIGURED_PINS)
       {
         Det_ReportError(PORT_MODULE_ID,
                         PORT_INSTANCE_ID,
                         Port_SetPinMode_SID,
-                        PORT_E_MODE_UNCHANGEABLE);
+                        PORT_E_PARAM_PIN);
       }
       
-      else
-#endif
+      else 
       {
+        /* Do Nothing */
+      }
+      
+              /* check if the Pin Mode is Unchangeable or not */
+        if(Port_PinConfigPtr->Pin[Pin].Pin_Change_Mode == No_Change)
+        {
+          Det_ReportError(PORT_MODULE_ID,
+                          PORT_INSTANCE_ID,
+                          Port_SetPinMode_SID,
+                          PORT_E_MODE_UNCHANGEABLE);
+          return;
+        }
+        
+        else
+        {
+          /* Do Nothing */
+        }
+      
+#endif
+      
          volatile uint32 * PortGpio_Ptr = NULL_PTR; /* point to the required Port Registers base address */
             
            switch(Port_PinConfigPtr->Pin[Pin].Port_Num)
@@ -443,7 +505,7 @@ void Port_SetPinMode( Port_PinType Pin, Port_PinModeType Mode )
                   *(volatile uint32 *)((volatile uint8 *)PortGpio_Ptr + PORT_CTL_REG_OFFSET) &= ~(0x0000000F << (Port_PinConfigPtr->Pin[Pin].Pin_Num * 4));     /* Clear the PMCx bits for this pin */
               break;
             }
-          } 
+           
       
 }
 
