@@ -180,7 +180,7 @@ typedef struct
 #define PORT_E_PARAM_POINTER            (uint8)0x15
    
    /*DET code to report Unchangable Mode*/
-#define PORT_E_MODE_UNCHANGEABLE        (uint8)0x20
+#define PORT_E_PARAM_INVALID_MODE        (uint8)0x20
    
    /*DET code to report Unchangable Direction*/
 #define PORT_E_DIRECTION_UNCHANGEABLE   (uint8)0x23

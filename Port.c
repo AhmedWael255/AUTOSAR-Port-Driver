@@ -413,7 +413,7 @@ void Port_SetPinMode( Port_PinType Pin, Port_PinModeType Mode )
       {
         Det_ReportError(PORT_MODULE_ID, 
                         PORT_INSTANCE_ID,
-                        Port_RefreshPortDirection_SID,
+                        Port_SetPinMode_SID,
                         PORT_E_UNINIT);
       }
       
@@ -443,7 +443,7 @@ void Port_SetPinMode( Port_PinType Pin, Port_PinModeType Mode )
           Det_ReportError(PORT_MODULE_ID,
                           PORT_INSTANCE_ID,
                           Port_SetPinMode_SID,
-                          PORT_E_MODE_UNCHANGEABLE);
+                          PORT_E_PARAM_INVALID_MODE);
           return;
         }
         
